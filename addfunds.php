@@ -15,7 +15,7 @@ endif;
 
 elseif ($method_id == 133) :
 $apiKey = $extra['api_key'];
-$apiUrl = "https://secure.doniapay.com/api/payment/create";
+$apiUrl = "https://payment.doniapay.com/api/payment/create";
 
 $final_amount = $amount * $extra['exchange_rate'];
 $txnid = substr(hash('sha256', mt_rand() . microtime()), 0, 20);
