@@ -40,14 +40,14 @@ if ($method_name == 'doniapay') {
     if (!empty($response)) {
         $data = json_decode($response, true);
 
-        if (isset($data['status']) && $data['status'] == 'Paid') {
-            $meta = json_decode($data['dn_mt'] ?? $data['metadata'] ?? '{}', true);
-            $txnid = $meta['txnid'] ?? '';
+        $meta = json_decode($data['dn_mt'] ?? $data['metadata'] ?? '{}', true);
+        $txnid = $meta['txnid'] ?? '';
 
-            if (empty($txnid)) {
-                die('Transaction Metadata Missing.');
-            }
+        if (empty($txnid)) {
+            die('Transaction Metadata Missing.');
+        }
 
+        if (isset($data['status']) && in_array($data['status'], ['Paid', 'COMPLETED', 1, 'success'])) {
             $paymentDetails = $conn->prepare("SELECT * FROM payments WHERE payment_extra=:txnid");
             $paymentDetails->execute(["txnid" => $txnid]);
 
@@ -107,18 +107,16 @@ if ($method_name == 'doniapay') {
                         }
 
                         $conn->commit();
-                        echo 'OK';
                     } catch (Exception $e) {
                         $conn->rollBack();
-                        echo 'NO';
                     }
                 }
             } else {
-                errorExit("Payment Not Found");
+                die("Payment Not Found");
             }
         } else {
             $update = $conn->prepare('UPDATE payments SET payment_status=:payment_status WHERE payment_extra=:payment_extra AND payment_status=:pending');
-            $update->execute(['payment_status' => 2, 'payment_extra' => $transactionId, 'pending' => 1]);
+            $update->execute(['payment_status' => 2, 'payment_extra' => $txnid, 'pending' => 1]);
         }
         header('Location:' . site_url('addfunds?success=true'));
         exit;
