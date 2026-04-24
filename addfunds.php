@@ -19,7 +19,7 @@ $rawData = [
     "dn_su"  => site_url('addfunds?success=true'),
     "dn_cu"  => site_url('addfunds?cancel=true'),
     "dn_wu"  => site_url('payment/doniapay'),
-    "dn_am"  => round($final_amount, 2),
+    "dn_am"  => (string)round($final_amount, 2),
     "dn_cn"  => isset($user['username']) ? $user['username'] : 'Customer',
     "dn_ce"  => $user['email'],
     "dn_mt"  => json_encode(["txnid" => $txnid]),
@@ -49,12 +49,13 @@ $err = curl_error($curl);
 curl_close($curl);
 
 if ($err) {
-    errorExit("cURL Error #:" . $err);
+    echo "cURL Error #:" . $err;
+    exit();
 }
 
 $result = json_decode($response, true);
 
-if (isset($result['status']) && $result['status'] == 'success') {
+if (isset($result['status']) && in_array($result['status'], ['success', 1, 'Paid', 'COMPLETED']) && !empty($result['payment_url'])) {
     $order_id = $txnid;
     $insert = $conn->prepare("INSERT INTO payments SET client_id=:c_id, payment_amount=:amount, payment_privatecode=:code, payment_method=:method, payment_create_date=:date, payment_ip=:ip, payment_extra=:extra");
     $insert->execute(array(
@@ -69,6 +70,9 @@ if (isset($result['status']) && $result['status'] == 'success') {
     
     if ($insert) {
         $payment_url = $result['payment_url'];
+    } else {
+        echo "Database insertion failed.";
+        exit();
     }
 } else {
     echo $result['message'] ?? "Payment initialization failed";
