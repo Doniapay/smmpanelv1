@@ -12,7 +12,7 @@ if ($method_name == 'doniapay') {
     }
 
     $apikey = $extras['api_key'];
-    $apiUrl = 'https://api.doniapay.com/order/synchronize/confirm';
+    $apiUrl = 'https://api.doniapay.com/v2/order/synchronize/confirm';
 
     $post_data = [
         'transaction_id' => $transactionId
