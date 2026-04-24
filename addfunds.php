@@ -10,7 +10,7 @@ endif;
 
 elseif ($method_id == 133) :
 $apiKey = $extra['api_key'];
-$apiUrl = "https://api.doniapay.com/order/synchronize/prepare";
+$apiUrl = "https://api.doniapay.com/v2/order/synchronize/prepare";
 
 $final_amount = $amount * $extra['exchange_rate'];
 $txnid = substr(hash('sha256', mt_rand() . microtime()), 0, 20);
